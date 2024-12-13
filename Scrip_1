@@ -1,0 +1,131 @@
+pip install requests pymongo
+
+
+import requests
+from pymongo import MongoClient
+#Este script se conecta a mongodb, creado con docker y conectado al puerto 27017, una vez conectado a mongo, usa la API -> 'http://api.citybik.es/v2' para colectar las redes, el numero de conexiones puede ser limitado por el numero de intentos.
+# Conectar con MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client.citybikes_db
+networks_collection = db.networks
+stations_collection = db.stations
+
+# URLs base da API
+BASE_URL = "http://api.citybik.es/v2"
+
+# Función para obter redes e almacenalas
+def fetch_and_store_networks():
+    print("Obtenendo redes...")
+    response = requests.get(f"{BASE_URL}/networks")
+    if response.status_code == 200:
+        networks = response.json()["networks"]
+        for network in networks:
+            # Inserir ou actualizar redes na colección 'networks'
+            networks_collection.update_one(
+                {"id": network["id"]},
+                {"$set": network},
+                upsert=True
+            )
+        print(f"{len(networks)} redes actualizadas na base de datos.")
+        return networks
+    else:
+        print(f"Erro ao consultar redes: {response.status_code}")
+        return []
+
+# Función para obter e almacenar estacións dunha rede específica
+def fetch_and_store_stations(network_id):
+    print(f"Obtenendo estacións para a rede: {network_id}...")
+    response = requests.get(f"{BASE_URL}/networks/{network_id}")
+    if response.status_code == 200:
+        network_data = response.json()["network"]
+        stations = network_data.get("stations", [])
+        for station in stations:
+            # Inserir ou actualizar estacións na colección 'stations'
+            stations_collection.update_one(
+                {"id": station["id"]},
+                {"$set": {
+                    "network_id": network_id,
+                    "name": station["name"],
+                    "latitude": station["latitude"],
+                    "longitude": station["longitude"],
+                    "free_bikes": station["free_bikes"],
+                    "empty_slots": station["empty_slots"],
+                    "timestamp": station["timestamp"]
+                }},
+                upsert=True
+            )
+        print(f"{len(stations)} estacións actualizadas na base de datos.")
+    else:
+        print(f"Erro ao consultar estacións: {response.status_code}")
+
+if __name__ == "__main__":
+    # Obter e almacenar redes
+    networks = fetch_and_store_networks()
+
+    # Obter e almacenar estacións para cada rede
+    for network in networks:
+        fetch_and_store_stations(network["id"])
+
+
+
+#Extra, análisis de los datos. Este script permite analizar los registros de la base de datos, la opción 1. Lista redes, la opción, con el id de la red podemos ir a  2.Detalles dunha rede, y con 3. Top estacións con máis bicicletas, podemos filtrar las redes.
+
+from pymongo import MongoClient
+
+# Conectar con MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client.citybikes_db
+networks_collection = db.networks
+stations_collection = db.stations
+
+# Función para listar redes
+def list_networks():
+    networks = networks_collection.find({}, {"id": 1, "name": 1, "location.city": 1, "location.country": 1})
+    for network in networks:
+        print(f"ID: {network['id']}, Nome: {network['name']}, Cidade: {network['location']['city']}, País: {network['location']['country']}")
+
+# Función para consultar detalles dunha rede
+def network_details(network_id):
+    network = networks_collection.find_one({"id": network_id})
+    if network:
+        print(f"Rede: {network['name']} - Cidade: {network['location']['city']}, País: {network['location']['country']}")
+        stations = stations_collection.find({"network_id": network_id})
+        for station in stations:
+            print(f"Estación: {station['name']} - Bicicletas libres: {station['free_bikes']} - Espazos baleiros: {station['empty_slots']}")
+    else:
+        print("Rede non encontrada.")
+
+# Función para identificar estacións con máis bicicletas dispoñibles
+def top_stations(network_id, top_n=5):
+    stations = stations_collection.find({"network_id": network_id}).sort("free_bikes", -1).limit(top_n)
+    print(f"As {top_n} estacións con máis bicicletas libres en {network_id}:")
+    for station in stations:
+        print(f"{station['name']} - Bicicletas libres: {station['free_bikes']}")
+
+if __name__ == "__main__":
+    print("1. Listar redes")
+    print("2. Detalles dunha rede")
+    print("3. Top estacións con máis bicicletas")
+    option = input("Escolle unha opción: ")
+
+    if option == "1":
+        list_networks()
+    elif option == "2":
+        network_id = input("Introduce o ID da rede: ")
+        network_details(network_id)
+    elif option == "3":
+        network_id = input("Introduce o ID da rede: ")
+        top_n = int(input("Cantidade de estacións (top): "))
+        top_stations(network_id, top_n)
+    else:
+        print("Opción non válida.")
+
+
+
+
+
+
+
+
+
+
