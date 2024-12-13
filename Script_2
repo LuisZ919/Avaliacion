@@ -1,0 +1,57 @@
+#conda install -c conda-forge fastparquet
+#conda install -c conda-forge pyarrow
+#Este script se conecta a la base de datos, y los exporta  y finalmente exporta 'stations_data.csv' y 'stations_data.parquet' al directorio que el script crea llamado 'exports'.
+
+import pandas as pd
+from pymongo import MongoClient
+import os
+
+# Conectar con MongoDB
+client = MongoClient("mongodb://localhost:27017/")
+db = client.citybikes_db  # Nome da base de datos
+stations_collection = db.stations  # Colección de estacións
+
+# Función para ler datos de MongoDB
+def load_data_from_mongodb():
+    print("Cargando datos de MongoDB...")
+    # Recuperar documentos da colección de estacións
+    documents = list(stations_collection.find({}, {
+        "_id": 0,  # Excluir o campo `_id` de MongoDB
+        "id": 1,
+        "name": 1,
+        "timestamp": 1,
+        "free_bikes": 1,
+        "empty_slots": 1,
+        "uid": 1,
+        "last_updated": 1,
+        "slots": 1,
+        "normal_bikes": 1,
+        "ebikes": 1
+    }))
+    
+    # Convertir os documentos nun DataFrame de pandas
+    df = pd.DataFrame(documents)
+    print(f"Datos cargados: {len(df)} filas.")
+    return df
+
+# Función para exportar o DataFrame
+def export_dataframe(df, output_dir="exports"):
+    # Crear o directorio de exportación se non existe
+    os.makedirs(output_dir, exist_ok=True)
+
+    # Exportar a CSV
+    csv_path = os.path.join(output_dir, "stations_data.csv")
+    df.to_csv(csv_path, index=False)
+    print(f"Datos exportados a CSV: {csv_path}")
+
+    # Exportar a Parquet
+    parquet_path = os.path.join(output_dir, "stations_data.parquet")
+    df.to_parquet(parquet_path, index=False)
+    print(f"Datos exportados a Parquet: {parquet_path}")
+
+if __name__ == "__main__":
+    # Cargar datos de MongoDB
+    dataframe = load_data_from_mongodb()
+
+    # Exportar o DataFrame a CSV e Parquet
+    export_dataframe(dataframe)
