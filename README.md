@@ -1,4 +1,4 @@
-# Avaliación  😇
+😇# Avaliación  😇
 **Exercicio:** Desenvolvemento e integración de scripts en Python  
 **Autor:** Luis García  
 
@@ -30,22 +30,22 @@ A API empregada é [CityBikes](https://citybik.es/), que ofrece información en 
 
 ### **Parte avanzada (opcional)** 🐸
 
-1. **Dockerización:**
+1. **Dockerización:** 🤩
    - Creouse unha imaxe Docker para a aplicación. Esta imaxe está publicada en Docker Hub:
      - [Docker Hub: luisz919/citybikes_app:latest](https://hub.docker.com/r/luisz919/citybikes_app)
    - Utilízanse contedores Docker para a aplicación e para un servidor MongoDB.
    
-2. **Despregue na nube (OpenStack):**
+2. **Despregue na nube (OpenStack):** 🫠
    - A aplicación está implementada nunha instancia OpenStack con MongoDB e os scripts configurados.
    - A execución mantense activa durante as vacacións, almacenando aproximadamente **2016 documentos** no período.
 
-3. **Automatización:**
+3. **Automatización:** 🦦
    - Os scripts están configurados como servizos do sistema para executar de forma autónoma.
    - A base de datos almacena información persistente con opción de exportación.
 
 ---
 
-## Instrucións de uso
+## Instrucións de uso ☣️
 
 ### **1. Clonar o repositorio**
 ```bash
