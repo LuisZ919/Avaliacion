@@ -42,6 +42,7 @@ A API empregada é [CityBikes](https://citybik.es/), que ofrece información en 
 3. **Automatización:** 🦦
    - Os scripts están configurados como servizos do sistema para executar de forma autónoma.
    - A base de datos almacena información persistente con opción de exportación.
+   - Para esta parte los archivos a mirar son -> Dockerfile  docker-compose.yml  requirements.txt  script.py
 
 ---
 
