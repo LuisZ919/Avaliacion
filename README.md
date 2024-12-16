@@ -1,4 +1,4 @@
-😇# Avaliación  😇
+# Avaliación  😇
 **Exercicio:** Desenvolvemento e integración de scripts en Python  
 **Autor:** Luis García  
 
